@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Addzy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        :root {
+            --primary: #FF2D55;
+            --background: #000000;
+            --surface: #121212;
+            --surface-light: #1C1C1E;
+            --text: #FFFFFF;
+            --text-secondary: #8E8E93;
+            --border: #2C2C2E;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app { display: none; }
+        .app.active { display: block; }
+
+        /* Auth */
+        .auth {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(180deg, #1a1a2e 0%, #000 100%);
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FF2D55, #FF9500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 40px;
+        }
+
+        .auth-form {
+            width: 100%;
+            max-width: 360px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        input {
+            padding: 16px;
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 16px;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        button {
+            padding: 16px;
+            background: linear-gradient(135deg, #FF2D55, #FF9500);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        button:active { opacity: 0.8; }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+        }
+
+        .auth-switch {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: 20px;
+        }
+
+        .auth-switch span {
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .error {
+            color: #FF3B30;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        /* Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 0.5px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .nav-item svg {
+            width: 26px;
+            height: 26px;
+            stroke: var(--text-secondary);
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .nav-item.active svg { stroke: var(--text); }
+
+        .nav-item img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid var(--text-secondary);
+        }
+
+        .nav-item.active img { border-color: var(--text); }
+
+        /* Screens */
+        .screen {
+            display: none;
+            height: calc(100vh - 80px);
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        .screen.active { display: block; }
+
+        /* Header */
+        .header {
+            padding: 12px 16px;
+            border-bottom: 0.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: var(--background);
+            z-index: 10;
+        }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        /* Feed */
+        .post {
+            border-bottom: 0.5px solid var(--border);
+            margin-bottom: 8px;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 12px;
+        }
+
+        .post-header img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .post-user {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .post-username {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .post-location {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .post-media {
+            width: 100%;
+            aspect-ratio: 1;
+            background: var(--surface);
+            position: relative;
+        }
+
+        .post-media img, .post-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-actions {
+            display: flex;
+            padding: 12px 16px;
+            gap: 16px;
+        }
+
+        .action-btn {
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 28px;
+            height: 28px;
+        }
+
+        .action-btn svg {
+            width: 28px;
+            height: 28px;
+            stroke: var(--text);
+            fill: none;
+        }
+
+        .action-btn.liked svg { fill: #FF2D55; stroke: #FF2D55; }
+
+        .post-likes {
+            padding: 0 16px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .post-caption {
+            padding: 0 16px;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .post-caption span {
+            font-weight: 600;
+            margin-right: 6px;
+        }
+
+        .post-comments {
+            padding: 0 16px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .post-time {
+            padding: 0 16px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        /* Stories */
+        .stories {
+            display: flex;
+            gap: 12px;
+            padding: 12px 16px;
+            overflow-x: auto;
+            border-bottom: 0.5px solid var(--border);
+        }
+
+        .story {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .story-ring {
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            padding: 3px;
+            background: linear-gradient(135deg, #FF2D55, #FF9500);
+        }
+
+        .story-ring img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--background);
+            object-fit: cover;
+        }
+
+        .story.add .story-ring {
+            background: var(--surface-light);
+            position: relative;
+        }
+
+        .add-icon {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 24px;
+            height: 24px;
+            background: #FF2D55;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border: 3px solid var(--background);
+        }
+
+        .story-username {
+            font-size: 12px;
+            max-width: 70px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Profile */
+        .profile-header {
+            padding: 16px;
+        }
+
+        .profile-top {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .profile-avatar-large {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 32px;
+            border: 3px solid var(--surface-light);
+        }
+
+        .profile-stats {
+            flex: 1;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .stat {
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .profile-info {
+            margin-bottom: 16px;
+        }
+
+        .profile-name {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .profile-bio {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .profile-btn {
+            flex: 1;
+            padding: 8px;
+            background: var(--surface-light);
+            border: none;
+            border-radius: 8px;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .profile-btn.primary {
+            background: linear-gradient(135deg, #FF2D55, #FF9500);
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+        }
+
+        .grid-item {
+            aspect-ratio: 1;
+            background: var(--surface);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .grid-item img, .grid-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .grid-overlay {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+        }
+
+        /* Messages */
+        .conversations {
+            padding-top: 8px;
+        }
+
+        .conversation {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .conversation:active {
+            background: var(--surface-light);
+        }
+
+        .conversation img {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .conversation-info {
+            flex: 1;
+        }
+
+        .conversation-top {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .conversation-name {
+            font-weight: 600;
+        }
+
+        .conversation-time {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .conversation-preview {
+            color: var(--text-secondary);
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conversation-preview.unread {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .unread-badge {
+            background: #FF2D55;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Chat */
+        .chat-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--background);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+        }
+
+        .chat-screen.active { display: flex; }
+
+        .chat-header {
+            padding: 12px 16px;
+            border-bottom: 0.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-header img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+        }
+
+        .chat-header-info {
+            flex: 1;
+        }
+
+        .chat-header-name {
+            font-weight: 600;
+        }
+
+        .chat-header-status {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 20px;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #FF2D55, #FF9500);
+        }
+
+        .message.received {
+            align-self: flex-start;
+            background: var(--surface-light);
+        }
+
+        .chat-input {
+            padding: 12px 16px;
+            border-top: 0.5px solid var(--border);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-input input {
+            flex: 1;
+            background: var(--surface-light);
+            border: none;
+            padding: 12px 16px;
+            border-radius: 20px;
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Create */
+        .create-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            padding: 24px;
+        }
+
+        .create-card {
+            background: var(--surface-light);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .create-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 16px;
+        }
+
+        /* Discover */
+        .discover-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2px;
+        }
+
+        .discover-item {
+            aspect-ratio: 1;
+            background: var(--surface);
+            cursor: pointer;
+        }
+
+        .discover-item img, .discover-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .discover-item.featured {
+            grid-column: span 2;
+            aspect-ratio: 2/1;
+        }
+
+        /* Media Viewer */
+        .media-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--background);
+            z-index: 200;
+            display: none;
+        }
+
+        .media-viewer.active { display: block; }
+
+        .viewer-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+        }
+
+        .viewer-header img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+        }
+
+        .viewer-content {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .viewer-content img, .viewer-content video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .viewer-actions {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        }
+
+        /* Search */
+        .search-box {
+            padding: 12px 16px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: var(--surface-light);
+            border: none;
+            padding: 12px 16px 12px 44px;
+            border-radius: 10px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 28px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .search-results {
+            padding-top: 8px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .user-item img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+        }
+
+        .user-username {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .follow-btn {
+            padding: 8px 20px;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .follow-btn.following {
+            background: var(--surface-light);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(30,30,30,0.95);
+            padding: 12px 24px;
+            border-radius: 24px;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--surface-light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .empty {
+            text-align: center;
+            padding: 60px 40px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth -->
+    <div class="auth" id="auth">
+        <div class="logo">Addzy</div>
+        
+        <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
+            <input type="text" id="loginUsername" placeholder="Username" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button type="submit">Log In</button>
+            <div class="error" id="loginError"></div>
+            
+            <div class="auth-switch">
+                Don't have an account? <span onclick="showSignup()">Sign up</span>
+            </div>
+        </form>
+
+        <form class="auth-form" id="signupForm" style="display: none;" onsubmit="handleSignup(event)">
+            <input type="email" id="signupEmail" placeholder="Email" required>
+            <input type="text" id="signupName" placeholder="Full Name" required>
+            <input type="text" id="signupUsername" placeholder="Username" required>
+            <input type="password" id="signupPassword" placeholder="Password" required minlength="6">
+            <button type="submit">Sign Up</button>
+            <div class="error" id="signupError"></div>
+            
+            <div class="auth-switch">
+                Already have an account? <span onclick="showLogin()">Log in</span>
+            </div>
+        </form>
+    </div>
+
+    <!-- App -->
+    <div class="app" id="app">
+        
+        <!-- Home Screen -->
+        <div class="screen active" id="homeScreen">
+            <div class="header">
+                <div class="header-title">Addzy</div>
+                <div style="cursor: pointer;" onclick="showNotifications()">❤️</div>
+            </div>
+            
+            <div class="stories" id="stories">
+                <div class="story add" onclick="createStory()">
+                    <div class="story-ring">
+                        <img src="" id="myStoryAvatar" alt="You">
+                        <div class="add-icon">+</div>
+                    </div>
+                    <span class="story-username">Your Story</span>
+                </div>
+            </div>
+            
+            <div id="feed">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- Discover Screen -->
+        <div class="screen" id="discoverScreen">
+            <div class="header">
+                <div class="header-title">Discover</div>
+            </div>
+            <div class="discover-grid" id="discoverGrid">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- Create Screen -->
+        <div class="screen" id="createScreen">
+            <div class="header">
+                <div class="header-title">Create</div>
+            </div>
+            <div class="create-options">
+                <div class="create-card" onclick="createPost()">
+                    <div class="create-icon" style="background: linear-gradient(135deg, #5856D6, #AF52DE);">📷</div>
+                    <div style="font-weight: 600;">Post</div>
+                </div>
+                <div class="create-card" onclick="createStory()">
+                    <div class="create-icon" style="background: linear-gradient(135deg, #FF2D55, #FF9500);">⚡</div>
+                    <div style="font-weight: 600;">Story</div>
+                </div>
+                <div class="create-card" onclick="createReel()">
+                    <div class="create-icon" style="background: linear-gradient(135deg, #007AFF, #5AC8FA);">🎬</div>
+                    <div style="font-weight: 600;">Reel</div>
+                </div>
+                <div class="create-card" onclick="goLive()">
+                    <div class="create-icon" style="background: linear-gradient(135deg, #34C759, #30D158);">📡</div>
+                    <div style="font-weight: 600;">Live</div>
+                </div>
+            </div>
+            
+            <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*" onchange="handleFileSelect(event)">
+        </div>
+
+        <!-- Messages Screen -->
+        <div class="screen" id="messagesScreen">
+            <div class="header">
+                <div class="header-title">Messages</div>
+                <div style="cursor: pointer;" onclick="newMessage()">✏️</div>
+            </div>
+            <div class="conversations" id="conversations">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- Profile Screen -->
+        <div class="screen" id="profileScreen">
+            <div class="header">
+                <div class="header-title" id="profileHeaderName">Profile</div>
+                <div style="cursor: pointer;" onclick="showSettings()">☰</div>
+            </div>
+            <div id="profileContent">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- Bottom Nav -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('home')">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div class="nav-item" onclick="switchTab('discover')">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <div class="nav-item" onclick="switchTab('create')">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            </div>
+            <div class="nav-item" onclick="switchTab('messages')">
+                <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            </div>
+            <div class="nav-item" onclick="switchTab('profile')">
+                <img src="" id="navProfileImg">
+            </div>
+        </nav>
+    </div>
+
+    <!-- Chat Screen -->
+    <div class="chat-screen" id="chatScreen">
+        <div class="chat-header">
+            <div onclick="closeChat()" style="cursor: pointer; font-size: 24px;">‹</div>
+            <img src="" id="chatAvatar">
+            <div class="chat-header-info">
+                <div class="chat-header-name" id="chatName">Name</div>
+                <div class="chat-header-status">Active now</div>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Message..." onkeypress="handleMessageKeypress(event)">
+            <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <!-- Media Viewer -->
+    <div class="media-viewer" id="mediaViewer">
+        <div class="viewer-header">
+            <div onclick="closeMediaViewer()" style="cursor: pointer; font-size: 24px;">✕</div>
+            <img src="" id="viewerAvatar">
+            <div style="flex: 1;">
+                <div id="viewerUsername" style="font-weight: 600;">username</div>
+            </div>
+        </div>
+        <div class="viewer-content" id="viewerContent"></div>
+        <div class="viewer-actions" id="viewerActions"></div>
+    </div>
+
+    <!-- Search Users Modal -->
+    <div class="media-viewer" id="searchModal" style="background: var(--background);">
+        <div class="viewer-header">
+            <div onclick="closeSearch()" style="cursor: pointer; font-size: 24px;">✕</div>
+            <div style="flex: 1; text-align: center; font-weight: 600;">New Message</div>
+            <div style="width: 40px;"></div>
+        </div>
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchUsersInput" placeholder="Search users..." oninput="searchUsers(this.value)">
+        </div>
+        <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Config
+        const API_URL = 'http://localhost:3000/api';
+        let token = localStorage.getItem('addzy_token');
+        let currentUser = null;
+        let currentChat = null;
+        let posts = [];
+
+        // Initialize
+        async function init() {
+            if (token) {
+                try {
+                    const res = await fetch(`${API_URL}/user/me`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        currentUser = await res.json();
+                        enterApp();
+                    } else {
+                        showAuth();
+                    }
+                } catch (e) {
+                    showAuth();
+                }
+            } else {
+                showAuth();
+            }
+        }
+
+        function showAuth() {
+            document.getElementById('auth').style.display = 'flex';
+            document.getElementById('app').classList.remove('active');
+        }
+
+        function enterApp() {
+            document.getElementById('auth').style.display = 'none';
+            document.getElementById('app').classList.add('active');
+            document.getElementById('myStoryAvatar').src = currentUser.avatar;
+            document.getElementById('navProfileImg').src = currentUser.avatar;
+            loadFeed();
+            loadDiscover();
+            loadConversations();
+            loadProfile();
+        }
+
+        // Auth Handlers
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const res = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    token = data.token;
+                    currentUser = data.user;
+                    localStorage.setItem('addzy_token', token);
+                    enterApp();
+                } else {
+                    showError('loginError', data.error);
+                }
+            } catch (e) {
+                showError('loginError', 'Network error');
+            }
+        }
+
+        async function handleSignup(e) {
+            e.preventDefault();
+            const email = document.getElementById('signupEmail').value;
+            const name = document.getElementById('signupName').value;
+            const username = document.getElementById('signupUsername').value;
+            const password = document.getElementById('signupPassword').value;
+            
+            try {
+                const res = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, name, username, password })
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    token = data.token;
+                    currentUser = data.user;
+                    localStorage.setItem('addzy_token', token);
+                    enterApp();
+                    showNotification('Welcome to Addzy!');
+                } else {
+                    showError('signupError', data.error);
+                }
+            } catch (e) {
+                showError('signupError', 'Network error');
+            }
+        }
+
+        function showSignup() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'flex';
+        }
+
+        function showLogin() {
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'flex';
+        }
+
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        // Navigation
+        function switchTab(tab) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(tab + 'Screen').classList.add('active');
+            
+            const navIndex = ['home', 'discover', 'create', 'messages', 'profile'].indexOf(tab);
+            document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
+            
+            if (tab === 'home') loadFeed();
+            if (tab === 'discover') loadDiscover();
+            if (tab === 'messages') loadConversations();
+            if (tab === 'profile') loadProfile();
+        }
+
+        // Feed
+        async function loadFeed() {
+            try {
+                const res = await fetch(`${API_URL}/posts/feed`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                posts = await res.json();
+                renderFeed(posts);
+            } catch (e) {
+                console.error('Feed error:', e);
+            }
+        }
+
+        function renderFeed(posts) {
+            const container = document.getElementById('feed');
+            
+            if (posts.length === 0) {
+                container.innerHTML = '<div class="empty"><div class="empty-icon">📷</div><div>No posts yet. Be the first to share!</div></div>';
+                return;
+            }
+            
+            container.innerHTML = posts.map(post => `
+                <div class="post">
+                    <div class="post-header">
+                        <img src="${post.userId.avatar}" onclick="viewProfile('${post.userId.username}')">
+                        <div class="post-user" onclick="viewProfile('${post.userId.username}')">
+                            <div class="post-username">${post.userId.username}</div>
+                            <div class="post-location">Posted recently</div>
+                        </div>
+                    </div>
+                    <div class="post-media" onclick="openMediaViewer('${post._id}')">
+                        ${post.type === 'video' 
+                            ? `<video src="${API_URL.replace('/api', '')}${post.mediaUrl}" poster="${post.mediaUrl}"></video>`
+                            : `<img src="${API_URL.replace('/api', '')}${post.mediaUrl}" alt="Post">`
+                        }
+                    </div>
+                    <div class="post-actions">
+                        <button class="action-btn ${post.likes.includes(currentUser._id) ? 'liked' : ''}" onclick="likePost('${post._id}', this)">
+                            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        </button>
+                        <button class="action-btn" onclick="openComments('${post._id}')">
+                            <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                        </button>
+                        <button class="action-btn" onclick="sharePost('${post._id}')">
+                            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </button>
+                    </div>
+                    <div class="post-likes">${post.likes.length} likes</div>
+                    <div class="post-caption"><span>${post.userId.username}</span>${post.caption}</div>
+                    <div class="post-comments" onclick="openComments('${post._id}')">View all ${post.comments.length} comments</div>
+                    <div class="post-time">Just now</div>
+                </div>
+            `).join('');
+        }
+
+        async function likePost(postId, btn) {
+            try {
+                const res = await fetch(`${API_URL}/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                btn.classList.toggle('liked', data.liked);
+                btn.closest('.post').querySelector('.post-likes').textContent = `${data.likes} likes`;
+            } catch (e) {
+                console.error('Like error:', e);
+            }
+        }
+
+        // Discover
+        async function loadDiscover() {
+            try {
+                const res = await fetch(`${API_URL}/posts/feed`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const allPosts = await res.json();
+                
+                const container = document.getElementById('discoverGrid');
+                container.innerHTML = allPosts.map((post, i) => `
+                    <div class="discover-item ${i === 0 ? 'featured' : ''}" onclick="openMediaViewer('${post._id}')">
+                        ${post.type === 'video'
+                            ? `<video src="${API_URL.replace('/api', '')}${post.mediaUrl}"></video>`
+                            : `<img src="${API_URL.replace('/api', '')}${post.mediaUrl}">`
+                        }
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Discover error:', e);
+            }
+        }
+
+        // Create
+        function createPost() {
+            document.getElementById('fileInput').click();
+        }
+
+        function createStory() {
+            showNotification('Stories coming soon');
+        }
+
+        function createReel() {
+            showNotification('Reels coming soon');
+        }
+
+        function goLive() {
+            showNotification('Live streaming coming soon');
+        }
+
+        async function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('media', file);
+            formData.append('type', file.type.startsWith('video') ? 'video' : 'image');
+            formData.append('caption', '');
+            
+            try {
+                const res = await fetch(`${API_URL}/posts`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                
+                if (res.ok) {
+                    showNotification('Posted!');
+                    loadFeed();
+                    switchTab('home');
+                }
+            } catch (e) {
+                showNotification('Upload failed');
+            }
+        }
+
+        // Messages - FIXED
+        async function loadConversations() {
+            try {
+                const res = await fetch(`${API_URL}/messages/conversations`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const conversations = await res.json();
+                
+                const container = document.getElementById('conversations');
+                
+                if (conversations.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty">
+                            <div class="empty-icon">💬</div>
+                            <div>No messages yet</div>
+                            <div style="margin-top: 12px; font-size: 14px;">Tap the compose button to start chatting</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = conversations.map(conv => `
+                    <div class="conversation" onclick="openChat('${conv.user._id}', '${conv.user.username}', '${conv.user.avatar}')">
+                        <img src="${conv.user.avatar}">
+                        <div class="conversation-info">
+                            <div class="conversation-top">
+                                <span class="conversation-name">${conv.user.username}</span>
+                                <span class="conversation-time">2m</span>
+                            </div>
+                            <div class="conversation-preview ${conv.unreadCount > 0 ? 'unread' : ''}">
+                                ${conv.lastMessage.text}
+                            </div>
+                        </div>
+                        ${conv.unreadCount > 0 ? `<span class="unread-badge">${conv.unreadCount}</span>` : ''}
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Conversations error:', e);
+            }
+        }
+
+        function newMessage() {
+            document.getElementById('searchModal').classList.add('active');
+        }
+
+        function closeSearch() {
+            document.getElementById('searchModal').classList.remove('active');
+        }
+
+        async function searchUsers(query) {
+            if (!query) {
+                document.getElementById('searchResults').innerHTML = '';
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_URL}/users/search/${query}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const users = await res.json();
+                
+                document.getElementById('searchResults').innerHTML = users.map(user => `
+                    <div class="user-item" onclick="startChat('${user._id}', '${user.username}', '${user.avatar}')">
+                        <img src="${user.avatar}">
+                        <div class="user-info">
+                            <div class="user-name">${user.name}</div>
+                            <div class="user-username">@${user.username}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Search error:', e);
+            }
+        }
+
+        function startChat(userId, username, avatar) {
+            closeSearch();
+            openChat(userId, username, avatar);
+        }
+
+        async function openChat(userId, username, avatar) {
+            currentChat = { userId, username, avatar };
+            
+            document.getElementById('chatScreen').classList.add('active');
+            document.getElementById('chatAvatar').src = avatar;
+            document.getElementById('chatName').textContent = username;
+            
+            await loadMessages(userId);
+        }
+
+        async function loadMessages(userId) {
+            try {
+                const res = await fetch(`${API_URL}/messages/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const messages = await res.json();
+                
+                const container = document.getElementById('chatMessages');
+                container.innerHTML = messages.map(msg => `
+                    <div class="message ${msg.senderId._id === currentUser._id ? 'sent' : 'received'}">
+                        ${msg.text}
+                    </div>
+                `).join('');
+                
+                container.scrollTop = container.scrollHeight;
+            } catch (e) {
+                console.error('Messages error:', e);
+            }
+        }
+
+        function closeChat() {
+            document.getElementById('chatScreen').classList.remove('active');
+            currentChat = null;
+        }
+
+        function handleMessageKeypress(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text || !currentChat) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        receiverId: currentChat.userId,
+                        text: text
+                    })
+                });
+                
+                if (res.ok) {
+                    input.value = '';
+                    loadMessages(currentChat.userId);
+                }
+            } catch (e) {
+                console.error('Send error:', e);
+            }
+        }
+
+        // Profile - FIXED
+        async function loadProfile() {
+            if (!currentUser) return;
+            
+            const container = document.getElementById('profileContent');
+            
+            try {
+                const res = await fetch(`${API_URL}/users/${currentUser.username}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                const user = data.user;
+                const posts = data.posts;
+                
+                document.getElementById('profileHeaderName').textContent = user.username;
+                
+                container.innerHTML = `
+                    <div class="profile-header">
+                        <div class="profile-top">
+                            <img src="${user.avatar}" class="profile-avatar-large">
+                            <div class="profile-stats">
+                                <div class="stat" onclick="showPosts()">
+                                    <div class="stat-value">${posts.length}</div>
+                                    <div class="stat-label">Posts</div>
+                                </div>
+                                <div class="stat" onclick="showFollowers()">
+                                    <div class="stat-value">${user.followers.length}</div>
+                                    <div class="stat-label">Followers</div>
+                                </div>
+                                <div class="stat" onclick="showFollowing()">
+                                    <div class="stat-value">${user.following.length}</div>
+                                    <div class="stat-label">Following</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="profile-info">
+                            <div class="profile-name">${user.name}</div>
+                            <div class="profile-bio">${user.bio || 'No bio yet'}</div>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="profile-btn" onclick="editProfile()">Edit Profile</button>
+                            <button class="profile-btn" onclick="shareProfile()">Share</button>
+                        </div>
+                    </div>
+                    <div class="profile-grid">
+                        ${posts.map(post => `
+                            <div class="grid-item" onclick="openMediaViewer('${post._id}')">
+                                ${post.type === 'video'
+                                    ? `<video src="${API_URL.replace('/api', '')}${post.mediaUrl}"></video><div class="grid-overlay">▶</div>`
+                                    : `<img src="${API_URL.replace('/api', '')}${post.mediaUrl}">`
+                                }
+                            </div>
+                        `).join('') || '<div class="empty" style="grid-column: span 3; padding: 40px;">No posts yet</div>'}
+                    </div>
+                `;
+            } catch (e) {
+                console.error('Profile error:', e);
+            }
+        }
+
+        async function viewProfile(username) {
+            try {
+                const res = await fetch(`${API_URL}/users/${username}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                const user = data.user;
+                const posts = data.posts;
+                const isFollowing = user.followers.includes(currentUser._id);
+                
+                // Replace profile screen content temporarily
+                const container = document.getElementById('profileContent');
+                
+                container.innerHTML = `
+                    <div style="padding: 12px 16px; border-bottom: 0.5px solid var(--border);">
+                        <div onclick="loadProfile(); switchTab('profile');" style="cursor: pointer; color: var(--primary);">← Back to My Profile</div>
+                    </div>
+                    <div class="profile-header">
+                        <div class="profile-top">
+                            <img src="${user.avatar}" class="profile-avatar-large">
+                            <div class="profile-stats">
+                                <div class="stat">
+                                    <div class="stat-value">${posts.length}</div>
+                                    <div class="stat-label">Posts</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value">${user.followers.length}</div>
+                                    <div class="stat-label">Followers</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value">${user.following.length}</div>
+                                    <div class="stat-label">Following</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="profile-info">
+                            <div class="profile-name">${user.name}</div>
+                            <div class="profile-bio">${user.bio || 'No bio'}</div>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="profile-btn ${isFollowing ? '' : 'primary'}" onclick="followUser('${user._id}', this)">
+                                ${isFollowing ? 'Following' : 'Follow'}
+                            </button>
+                            <button class="profile-btn" onclick="openChat('${user._id}', '${user.username}', '${user.avatar}')">Message</button>
+                        </div>
+                    </div>
+                    <div class="profile-grid">
+                        ${posts.map(post => `
+                            <div class="grid-item" onclick="openMediaViewer('${post._id}')">
+                                ${post.type === 'video'
+                                    ? `<video src="${API_URL.replace('/api', '')}${post.mediaUrl}"></video><div class="grid-overlay">▶</div>`
+                                    : `<img src="${API_URL.replace('/api', '')}${post.mediaUrl}">`
+                                }
+                            </div>
+                        `).join('') || '<div class="empty" style="grid-column: span 3;">No posts</div>'}
+                    </div>
+                `;
+                
+                switchTab('profile');
+            } catch (e) {
+                console.error('View profile error:', e);
+            }
+        }
+
+        async function followUser(userId, btn) {
+            try {
+                const res = await fetch(`${API_URL}/users/${userId}/follow`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                btn.textContent = data.following ? 'Following' : 'Follow';
+                btn.classList.toggle('primary', !data.following);
+            } catch (e) {
+                console.error('Follow error:', e);
+            }
+        }
+
+        // Media Viewer - FIXED
+        function openMediaViewer(postId) {
+            const post = posts.find(p => p._id === postId);
+            if (!post) return;
+            
+            const viewer = document.getElementById('mediaViewer');
+            const content = document.getElementById('viewerContent');
+            const actions = document.getElementById('viewerActions');
+            
+            document.getElementById('viewerAvatar').src = post.userId.avatar;
+            document.getElementById('viewerUsername').textContent = post.userId.username;
+            
+            if (post.type === 'video') {
+                content.innerHTML = `<video src="${API_URL.replace('/api', '')}${post.mediaUrl}" controls autoplay style="max-width: 100%; max-height: 70vh;"></video>`;
+            } else {
+                content.innerHTML = `<img src="${API_URL.replace('/api', '')}${post.mediaUrl}" style="max-width: 100%; max-height: 70vh; object-fit: contain;">`;
+            }
+            
+            actions.innerHTML = `
+                <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+                    <button class="action-btn ${post.likes.includes(currentUser._id) ? 'liked' : ''}" onclick="likePost('${post._id}', this); updateViewerLike('${post._id}')">
+                        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </button>
+                    <span style="font-weight: 600;">${post.likes.length} likes</span>
+                </div>
+                <div style="margin-bottom: 8px;"><span style="font-weight: 600; margin-right: 8px;">${post.userId.username}</span>${post.caption}</div>
+            `;
+            
+            viewer.classList.add('active');
+        }
+
+        function closeMediaViewer() {
+            document.getElementById('mediaViewer').classList.remove('active');
+        }
+
+        function updateViewerLike(postId) {
+            // Refresh viewer data
+            openMediaViewer(postId);
+        }
+
+        // Comments
+        function openComments(postId) {
+            showNotification('Comments coming in next update');
+        }
+
+        function sharePost(postId) {
+            navigator.clipboard.writeText(`https://addzy.app/p/${postId}`);
+            showNotification('Link copied!');
+        }
+
+        // Settings
+        function showSettings() {
+            const action = confirm('Log out of Addzy?');
+            if (action) {
+                localStorage.removeItem('addzy_token');
+                location.reload();
+            }
+        }
+
+        function showNotifications() {
+            showNotification('No new notifications');
+        }
+
+        function showPosts() {
+            showNotification('Your posts');
+        }
+
+        function showFollowers() {
+            showNotification('Followers list coming soon');
+        }
+
+        function showFollowing() {
+            showNotification('Following list coming soon');
+        }
+
+        function editProfile() {
+            const bio = prompt('Enter new bio:', currentUser.bio || '');
+            if (bio !== null) {
+                fetch(`${API_URL}/user/profile`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ bio })
+                }).then(() => {
+                    currentUser.bio = bio;
+                    loadProfile();
+                    showNotification('Profile updated');
+                });
+            }
+        }
+
+        function shareProfile() {
+            navigator.clipboard.writeText(`https://addzy.app/${currentUser.username}`);
+            showNotification('Profile link copied!');
+        }
+
+        // Notification
+        function showNotification(msg) {
+            const notif = document.getElementById('notification');
+            notif.textContent = msg;
+            notif.classList.add('show');
+            setTimeout(() => notif.classList.remove('show'), 2500);
+        }
+
+        // Init
+        init();
+    </script>
+</body>
+</html>
